@@ -1,0 +1,20 @@
+version: "3.8"
+
+name: animepipline
+
+networks:
+  backend:
+    driver: bridge
+
+services:
+  mongodb:
+    image: mongo:8.0.0-rc13-jammy
+    restart: always
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=123456
+      - MONGO_INITDB_DATABASE=animepipline
+    networks:
+      - backend

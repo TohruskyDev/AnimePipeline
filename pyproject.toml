@@ -43,6 +43,9 @@ version = "0.0.1"
 
 # Requirements
 [tool.poetry.dependencies]
+feedparser = "*"
+httpx = "*"
+loguru = "*"
 pydantic = "*"
 python = "^3.9"
 tenacity = "*"
