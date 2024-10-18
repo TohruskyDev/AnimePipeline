@@ -5,20 +5,18 @@ import pathlib
 import pymediainfo
 from loguru import logger
 
-from animepipeline.mediainfo.base_info import BaseInfo
+from animepipeline.mediainfo.type import FileNameInfo
 
 
-def gen_file_name(input_path: str, anime_info: BaseInfo) -> str:
+def gen_file_name(anime_info: FileNameInfo) -> str:
     """
-    Auto generate the file name
+    Auto generate the file name, based on the media info of the file
 
-    input_path: Fate.Kaleid.Liner.Prisma.Ilya.01.1080p.HEVC-10bit.FLAC.mkv
-    anime_info: BaseRSS (episode: 1, name: Fate/Kaleid Liner Prisma Illya, uploader: TensoRaws)
+    anime_info: FileNameInfo (path: xx.mkv, episode: 1, name: Fate/Kaleid Liner Prisma Illya, uploader: TensoRaws)
 
     -> [TensoRaws] Fate/Kaleid Liner Prisma Illya [01] [1080p HEVC-10bit FLAC].mkv
 
-    :param input_path: str
-    :param anime_info: BaseInfo
+    :param anime_info: FileNameInfo
     :return:
     """
     resolution_heigh = "2160p"
@@ -26,7 +24,7 @@ def gen_file_name(input_path: str, anime_info: BaseInfo) -> str:
     video_format = "HEVC"
     audio_format = "FLAC"
 
-    write_path = os.path.abspath(input_path)
+    write_path = os.path.abspath(anime_info.path)
     encode_media_info = pymediainfo.MediaInfo.parse(write_path, output="JSON")
     encode_tracks = json.loads(encode_media_info)["media"]["track"]
 
@@ -65,6 +63,6 @@ def gen_file_name(input_path: str, anime_info: BaseInfo) -> str:
         logger.warning(e)
         logger.warning("Exceptional audio track")
 
-    file_format = pathlib.Path(input_path).suffix
+    file_format = pathlib.Path(anime_info.path).suffix
 
     return f"[{anime_info.uploader}] {anime_info.name} [{str(anime_info.episode).zfill(2)}] [{resolution_heigh} {video_format}-{bit_depth} {audio_format}]{file_format}"
