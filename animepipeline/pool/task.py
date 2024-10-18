@@ -1,55 +1,63 @@
-import concurrent.futures
-import threading
+import asyncio
 from typing import Any, Callable, Dict
 
 
 class AsyncTaskExecutor:
     """
     A simple async task executor that can submit tasks and check their status.
-    This class uses ThreadPoolExecutor to run tasks in parallel.
+    This class uses asyncio to run tasks concurrently.
     """
 
     def __init__(self) -> None:
-        self.executor = concurrent.futures.ThreadPoolExecutor()
-        self.lock = threading.Lock()
-        self.tasks: Dict[str, Any] = {}
+        self.lock = asyncio.Lock()
+        self.tasks: Dict[str, asyncio.Task] = {}
 
-    def submit_task(self, task_id: str, func: Callable[[Any], Any], *args: Any, **kwargs: Any) -> None:
+    async def submit_task(self, task_id: str, func: Callable[..., Any], *args: Any, **kwargs: Any) -> None:
         """
         Submit a task to the executor.
 
         :param task_id: The task ID.
-        :param func: The function to run.
+        :param func: The function to run asynchronously.
         :param args: The arguments to pass to the function.
         :param kwargs: The keyword arguments to pass to the function.
         """
+        async with self.lock:
+            if task_id in self.tasks:
+                return  # Task is already running
 
-        with self.lock:
-            if self.tasks.get(task_id) and not self.tasks[task_id].done():
-                return
+            # Wrap the function in asyncio.create_task to run it concurrently
+            self.tasks[task_id] = asyncio.create_task(func(*args, **kwargs))
 
-            self.tasks[task_id] = None
-
-        future = self.executor.submit(func, *args, **kwargs)
-        self.tasks[task_id] = future
-
-    def task_status(self, task_id: str) -> str:
+    async def task_status(self, task_id: str) -> str:
         """
         Check the status of a task.
 
         :param task_id: The task ID to check.
         """
-        with self.lock:
-            if self.tasks.get(task_id) and not self.tasks[task_id].done():
+        async with self.lock:
+            if task_id in self.tasks and not self.tasks[task_id].done():
                 return "Pending"
-            elif self.tasks.get(task_id) and self.tasks[task_id].done():
+            elif task_id in self.tasks and self.tasks[task_id].done():
                 return "Completed"
             else:
                 return "Unknown"
 
-    def shutdown(self) -> None:
+    async def shutdown(self) -> None:
         """
-        Shutdown the executor.
+        Cancel all running tasks and shutdown the executor.
         """
-        self.executor.shutdown(wait=True)
-        print("All tasks have been shutdown.")
+        async with self.lock:
+            for task in self.tasks.values():
+                if not task.done():
+                    task.cancel()
+
+        print("All tasks have been cancelled.")
+
+    async def wait_all_tasks(self) -> None:
+        """
+        Wait for all tasks to complete.
+        """
+        async with self.lock:
+            await asyncio.gather(*self.tasks.values())
+
+        print("All tasks have been completed.")

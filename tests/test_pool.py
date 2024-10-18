@@ -1,22 +1,27 @@
-import time
+import asyncio
 
 from animepipeline.pool.task import AsyncTaskExecutor
 
 
 def test_task_executor() -> None:
-    executor = AsyncTaskExecutor()
+    # Example task function
+    async def example_task(task_id: str, duration: int) -> None:
+        print(f"Task {task_id} started, will take {duration} seconds.")
+        await asyncio.sleep(duration)
+        print(f"Task {task_id} completed.")
 
-    def my_task(name: str, sb: int = 1) -> None:
-        print(sb)
-        print(f"Task {name} is starting.")
-        time.sleep(1)
-        print(f"Task {name} is completed.")
+    async def _test() -> None:
+        executor = AsyncTaskExecutor()
 
-    executor.submit_task("1", my_task, "Task1", 114514)
+        for task_id in range(114):
+            # Dynamically create a new task every few seconds
+            await asyncio.create_task(executor.submit_task(f"task{task_id}", example_task, f"task{task_id}", 3))
+            print(f"Task {task_id} has been submitted.")
 
-    assert executor.task_status("1") == "Pending"
+        await executor.wait_all_tasks()
 
-    executor.shutdown()
+        assert len(executor.tasks) == 114
+        for task_id in range(114):
+            assert await executor.task_status(f"task{task_id}") == "Completed"
 
-    assert len(executor.tasks) == 1
-    assert executor.task_status("1") == "Completed"
+    asyncio.run(_test())
