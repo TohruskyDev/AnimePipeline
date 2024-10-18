@@ -47,7 +47,7 @@ feedparser = "*"
 httpx = "*"
 loguru = "*"
 pydantic = "*"
-pymediainfo-tensoraws = "^0.0.1"
+pymediainfo-tensoraws = "6.1.0"
 python = "^3.9"
 tenacity = "*"
 
