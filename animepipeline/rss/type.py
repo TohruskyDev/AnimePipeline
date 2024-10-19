@@ -5,7 +5,7 @@ from pydantic import AnyHttpUrl, BaseModel
 
 
 class RSSInfo(BaseModel):
-    rss_link: Union[AnyHttpUrl, str]
+    link: Union[AnyHttpUrl, str]
     pattern: str
 
 

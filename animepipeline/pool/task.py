@@ -51,13 +51,9 @@ class AsyncTaskExecutor:
                 if not task.done():
                     task.cancel()
 
-        print("All tasks have been cancelled.")
-
     async def wait_all_tasks(self) -> None:
         """
         Wait for all tasks to complete.
         """
         async with self.lock:
             await asyncio.gather(*self.tasks.values())
-
-        print("All tasks have been completed.")

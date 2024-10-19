@@ -12,7 +12,7 @@ from animepipeline.rss.type import RSSInfo, TorrentInfo
 
 @retry(wait=wait_random(min=3, max=5), stop=stop_after_delay(10) | stop_after_attempt(30))
 def parse_nyaa(rss_info: RSSInfo) -> List[TorrentInfo]:
-    rss_content = httpx.get(rss_info.rss_link).text
+    rss_content = httpx.get(rss_info.link).text
 
     # 使用feedparser解析XML
     feed = feedparser.parse(rss_content)

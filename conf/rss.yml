@@ -1,0 +1,16 @@
+base:
+  uploader: TensoRaws
+  script: default.py
+  param: default.txt
+
+nyaa:
+  - name: "Make Heroine ga Oosugiru!"
+    link: "https://nyaa.si/?page=rss&q=%5BSubsPlease%5D+Make+Heroine+ga+Oosugiru%21+-++%281080p%29&c=0_0&f=0"
+    pattern: 'Make Heroine ga Oosugiru! - (\d+) \(1080p\)'
+  #    uploader: '114514Raws' # override uploader
+  #    script: default2.py # override script
+  #    param: default2.txt # override param
+
+  - name: "Roshidere"
+    link: "[Erai-raws] Roshidere -  [1080p][Multiple Subtitle] [ENG][POR-BR][SPA-LA][SPA][ARA][FRE][GER][ITA][RUS] -[HEVC]"
+    pattern: 'Roshidere - (\d+) \[1080p\]'

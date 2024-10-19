@@ -17,7 +17,7 @@ async def test_task_executor() -> None:
     executor = AsyncTaskExecutor()
 
     for task_id in range(114):
-        await asyncio.create_task(executor.submit_task(f"task{task_id}", example_task, f"task{task_id}", 3))
+        await executor.submit_task(f"task{task_id}", example_task, f"task{task_id}", 3)
         print(f"Task {task_id} has been submitted.")
 
     await executor.wait_all_tasks()
@@ -32,7 +32,7 @@ async def test_task_executor_shutdown() -> None:
     executor = AsyncTaskExecutor()
 
     for task_id in range(114):
-        await asyncio.create_task(executor.submit_task(f"task{task_id}", example_task, f"task{task_id}", 300))
+        await executor.submit_task(f"task{task_id}", example_task, f"task{task_id}", 300)
         print(f"Task {task_id} has been submitted.")
 
     await executor.shutdown()

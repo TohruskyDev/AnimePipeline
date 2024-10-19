@@ -38,6 +38,7 @@ repos:
         additional_dependencies:
           - types-requests
           - types-certifi
+          - types-pyyaml
           - pytest
           - pydantic
           - tenacity
