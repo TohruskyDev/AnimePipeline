@@ -166,3 +166,4 @@ cython_debug/
 
 
 /tests/task.json
+/task.json

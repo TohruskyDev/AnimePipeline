@@ -34,7 +34,7 @@ class AsyncJsonStore:
         """Save data to the JSON file."""
         with open(self.file_path, "w", encoding="utf-8") as file:
             # convert TaskStatus objects to dictionaries
-            data = {task_id: task.dict() for task_id, task in self.data.items()}
+            data = {task_id: task.model_dump() for task_id, task in self.data.items()}
             json.dump(data, file, ensure_ascii=False, indent=4)
 
     async def add_task(self, task_id: str, status: TaskStatus) -> None:
