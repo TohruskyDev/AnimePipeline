@@ -81,14 +81,26 @@ class RSSConfig(BaseModel):
         # base
         if config.base.script not in config.scripts:
             raise ValueError(f"base: script {config.base.script} not found")
+
         if config.base.param not in config.params:
             raise ValueError(f"base: param {config.base.param} not found")
+
         # nyaa
         for item in config.nyaa:
-            if item.script is not None and item.script not in config.scripts:
-                raise ValueError(f"nyaa: script {item.script} not found")
-            if item.param is not None and item.param not in config.params:
-                raise ValueError(f"nyaa: param {item.param} not found")
+            if item.uploader is None:
+                item.uploader = config.base.uploader
+
+            if item.script is None:
+                item.script = config.base.script
+            else:
+                if item.script not in config.scripts:
+                    raise ValueError(f"nyaa: script {item.script} not found")
+
+            if item.param is None:
+                item.param = config.base.param
+            else:
+                if item.param not in config.params:
+                    raise ValueError(f"nyaa: param {item.param} not found")
 
         config.config_path = Path(path)
         config.scripts_path = Path(scripts_path)

@@ -58,19 +58,3 @@ class ServerConfig(BaseModel):
         config.config_path = Path(path)
 
         return config
-
-    def refresh_config(self) -> None:
-        """
-        Refresh configuration from the yaml file.
-        """
-        try:
-            if self.config_path is None:
-                raise ValueError("No configuration file path provided")
-            new_config = ServerConfig.from_yaml(self.config_path)
-        except Exception as e:
-            print(f"Failed to load new configuration: {e}")
-            return
-
-        self.db = new_config.db
-        self.qbittorrent = new_config.qbittorrent
-        self.finalrip = new_config.finalrip
