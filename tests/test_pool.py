@@ -42,3 +42,12 @@ async def test_task_executor_shutdown() -> None:
     assert len(executor.tasks) == 114
     for task_id in range(114):
         assert await executor.task_status(f"task{task_id}") == "Pending"
+
+
+@pytest.mark.asyncio
+async def test_task_dump() -> None:
+    executor = AsyncTaskExecutor()
+
+    await executor.submit_task(f"task{1}", example_task, f"task{1}", 0)
+    await asyncio.sleep(1)
+    await executor.submit_task(f"task{1}", example_task, f"task{1}", 0)

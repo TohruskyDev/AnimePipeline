@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
-from typing import Any, Literal, Union
+from typing import Any, Literal, Optional, Union
 
 import yaml
-from pydantic import AnyUrl, BaseModel, Field, ValidationError
+from pydantic import AnyUrl, BaseModel, Field, FilePath, ValidationError
 
 
 class DBConfig(BaseModel):
@@ -29,9 +29,11 @@ class FinalRipConfig(BaseModel):
 
 
 class ServerConfig(BaseModel):
-    db: DBConfig  # 嵌套的配置
+    db: DBConfig
     qbittorrent: QBitTorrentConfig
     finalrip: FinalRipConfig
+
+    config_path: Optional[FilePath] = None
 
     @classmethod
     def from_yaml(cls, path: Union[Path, str]) -> Any:
@@ -45,7 +47,6 @@ class ServerConfig(BaseModel):
         with open(path, "r", encoding="utf-8") as file:
             try:
                 config_data = yaml.safe_load(file)
-                return cls(**config_data)
             except yaml.YAMLError as e:
                 raise ValueError(f"Error loading YAML: {e}")
             except ValidationError as e:
@@ -53,15 +54,23 @@ class ServerConfig(BaseModel):
             except Exception as e:
                 raise ValueError(f"Error loading config: {e}")
 
-    def refresh_config(self, path: Union[Path, str]) -> None:
+        config = cls(**config_data)
+        config.config_path = Path(path)
+
+        return config
+
+    def refresh_config(self) -> None:
         """
         Refresh configuration from the yaml file.
-
-        :param path: The path to the yaml file.
         """
         try:
-            new_config = ServerConfig.from_yaml(path)
+            if self.config_path is None:
+                raise ValueError("No configuration file path provided")
+            new_config = ServerConfig.from_yaml(self.config_path)
         except Exception as e:
             print(f"Failed to load new configuration: {e}")
             return
+
         self.db = new_config.db
+        self.qbittorrent = new_config.qbittorrent
+        self.finalrip = new_config.finalrip
