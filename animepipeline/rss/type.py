@@ -4,12 +4,8 @@ from typing import Union
 from pydantic import AnyHttpUrl, BaseModel
 
 
-class RSSInfo(BaseModel):
-    link: Union[AnyHttpUrl, str]
-    pattern: str
-
-
 class TorrentInfo(BaseModel):
+    name: str
     episode: int
     title: str
     link: Union[AnyHttpUrl, str]
