@@ -29,7 +29,7 @@ class FinalRipConfig(BaseModel):
 
 
 class ServerConfig(BaseModel):
-    db: DBConfig  # 嵌套的数据库配置
+    db: DBConfig  # 嵌套的配置
     qbittorrent: QBitTorrentConfig
     finalrip: FinalRipConfig
 

@@ -1,0 +1,24 @@
+import pytest
+
+from animepipeline.store.task import AsyncJsonStore, TaskStatus
+
+
+@pytest.mark.asyncio
+async def test_task_store() -> None:
+    store = AsyncJsonStore()
+
+    # 添加一个任务
+    await store.add_task("task_1", TaskStatus(status="pending", details="waiting for execution"))
+
+    # 获取任务
+    task = await store.get_task("task_1")
+    print(task)
+    task.status = "completed"
+    task.details = "task finished successfully"
+
+    # 更新任务状态
+    await store.update_task("task_1", task)
+    print(await store.get_task("task_1"))
+
+    # 删除任务
+    await store.delete_task("task_1")
