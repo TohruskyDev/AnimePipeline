@@ -33,7 +33,7 @@ def test_qbittorrent() -> None:
 
     # Check if the download is complete
     while True:
-        if qb_manager.is_download_complete(torrent_hash):
+        if qb_manager.check_download_complete(torrent_hash):
             print("Download is complete.")
             break
         else:

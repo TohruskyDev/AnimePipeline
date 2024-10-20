@@ -16,7 +16,7 @@ class QBittorrentManager:
     """
 
     def __init__(self, config: QBitTorrentConfig):
-        self.qbt_client = qbittorrentapi.Client(
+        self.client = qbittorrentapi.Client(
             host=config.host,
             port=config.port,
             username=config.username,
@@ -42,12 +42,12 @@ class QBittorrentManager:
             return
 
         try:
-            self.qbt_client.torrents.add(urls=torrent_url)
+            self.client.torrents.add(urls=torrent_url)
             logger.info(f"Torrent {torrent_url} added for download.")
         except Exception as e:
             logger.error(f"Failed to add torrent: {e}")
 
-    def is_download_complete(self, torrent_hash: str) -> bool:
+    def check_download_complete(self, torrent_hash: str) -> bool:
         """
         Check if the download is complete
 
@@ -55,7 +55,7 @@ class QBittorrentManager:
         """
 
         try:
-            torrent = self.qbt_client.torrents_info(torrent_hashes=torrent_hash)
+            torrent = self.client.torrents_info(torrent_hashes=torrent_hash)
 
             if torrent[0].state in self.COMPLETE_STATES:
                 return True
@@ -73,7 +73,7 @@ class QBittorrentManager:
         :param torrent_hash:
         """
         try:
-            torrent = self.qbt_client.torrents_info(torrent_hashes=torrent_hash)
+            torrent = self.client.torrents_info(torrent_hashes=torrent_hash)
 
             if torrent[0].state in self.COMPLETE_STATES:
                 file_list: List[Tuple[str, int]] = [(file["name"], file["size"]) for file in torrent[0].files]
@@ -94,7 +94,7 @@ class QBittorrentManager:
         :param torrent_hash: Torrent hash
         """
         try:
-            torrent = self.qbt_client.torrents_info(torrent_hashes=torrent_hash)
+            torrent = self.client.torrents_info(torrent_hashes=torrent_hash)
             return len(torrent) > 0
 
         except Exception as e:
