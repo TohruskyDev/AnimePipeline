@@ -50,6 +50,7 @@ loguru = "*"
 pydantic = "*"
 pymediainfo-tensoraws = "6.1.0"
 python = "^3.9"
+qbittorrent-api = "*"
 tenacity = "*"
 
 [tool.poetry.group.dev.dependencies]

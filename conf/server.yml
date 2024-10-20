@@ -12,6 +12,7 @@ qbittorrent:
   port: 8080
   username: admin
   password: adminadmin
+  download_path: /Users/tohru/Downloads/AnimePipeline/deploy/docker/downloads
 
 finalrip:
   url: http://localhost:8848

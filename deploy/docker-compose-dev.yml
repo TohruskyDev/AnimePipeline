@@ -7,14 +7,16 @@ networks:
     driver: bridge
 
 services:
-  mongodb:
-    image: mongo:8.0.0-rc13-jammy
+  qb:
+    image: superng6/qbittorrentee:4.4.5.10
     restart: always
-    ports:
-      - "27017:27017"
     environment:
-      - MONGO_INITDB_ROOT_USERNAME=root
-      - MONGO_INITDB_ROOT_PASSWORD=123456
-      - MONGO_INITDB_DATABASE=animepipline
-    networks:
-      - backend
+      - PUID=1026
+      - PGID=100
+    volumes:
+      - ./docker/qb-config:/config
+      - ./docker/downloads:/downloads
+    ports:
+      - "6881:6881"
+      - "6881:6881/udp"
+      - "8080:8080"

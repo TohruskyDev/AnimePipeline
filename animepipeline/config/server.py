@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Literal, Optional, Union
 
 import yaml
-from pydantic import AnyUrl, BaseModel, Field, FilePath, ValidationError
+from pydantic import AnyUrl, BaseModel, DirectoryPath, Field, FilePath, ValidationError
 
 
 class DBConfig(BaseModel):
@@ -21,6 +21,7 @@ class QBitTorrentConfig(BaseModel):
     port: int = Field(..., ge=1, le=65535)
     username: Union[str, int]
     password: Union[str, int]
+    download_path: DirectoryPath
 
 
 class FinalRipConfig(BaseModel):
