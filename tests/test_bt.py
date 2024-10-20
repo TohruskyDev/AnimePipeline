@@ -15,12 +15,17 @@ def test_qbittorrent() -> None:
     torrent_hash = "2f3605cbe42e1af71f417586b1d790b8c9274cd4"
     torrent_url = "https://nyaa.si/download/1877758.torrent"
 
+    if Path("../deploy/docker/downloads").exists():
+        download_path = Path("../deploy/docker/downloads")
+    else:
+        download_path = Path("./deploy/docker/downloads")
+
     cfg = QBitTorrentConfig(
         host="localhost",
         port=8080,
         username="admin",
         password="adminadmin",
-        download_path=Path("../deploy/docker/downloads"),
+        download_path=download_path,
     )
     qb_manager = QBittorrentManager(config=cfg)
 
