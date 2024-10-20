@@ -38,9 +38,11 @@ def test_finalrip() -> None:
 
     while True:
         try:
-            finalrip.download_completed_task(video_key=video_key, save_path=ASSETS_PATH / video_key)
+            finalrip.download_completed_task(video_key=video_key, save_path=ASSETS_PATH / "new.mkv")
             break
         except TaskNotCompletedError:
             print("Task not completed yet")
-        finally:
+            time.sleep(5)
+        except Exception as e:
+            print(e)
             time.sleep(5)

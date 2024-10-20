@@ -58,6 +58,11 @@ class RSSConfig(BaseModel):
                 raise ValueError(f"Error loading config: {e}")
 
         def _gen_dict(folder_path: Union[Path, str]) -> Dict[str, str]:
+            """
+            Generate a dictionary from the files in the folder. file_name -> file_content.
+
+            :param folder_path: The path to the folder.
+            """
             if not os.path.exists(folder_path):
                 raise FileNotFoundError(f"Folder {folder_path} not found")
             res = {}
