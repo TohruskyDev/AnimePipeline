@@ -1,6 +1,8 @@
+import mimetypes
 from pathlib import Path
 from typing import Union
 
+import httpx
 from httpx import Client
 
 from animepipeline.config import FinalRipConfig
@@ -14,6 +16,7 @@ from animepipeline.encode.type import (
     PingResponse,
     StartTaskRequest,
     StartTaskResponse,
+    TaskNotCompletedError,
 )
 from animepipeline.util.video import VIDEO_EXTENSIONS
 
@@ -80,13 +83,41 @@ class FinalRipClient:
         if not oss_presigned_url_response.success:
             raise ValueError(f"Error getting presigned URL: {oss_presigned_url_response.error.message}")  # type: ignore
 
+        content_type = mimetypes.guess_type(video_path)[0] or "application/octet-stream"
+
         # upload file
         with open(video_path, "rb") as file:
-            response = self.client.put(oss_presigned_url_response.data.url, files={"file": file})  # type: ignore
+            response = httpx.put(
+                url=oss_presigned_url_response.data.url,  # type: ignore
+                data=file,
+                headers={"Content-Type": content_type},
+            )
             if response.status_code != 200:
-                raise ValueError(f"Error uploading file: {response.text}")
+                raise IOError(f"Error uploading file: {response.text}")
 
         # new task
         new_task_response = self.new_task(NewTaskRequest(video_key=video_key))
         if not new_task_response.success:
             raise ValueError(f"Error creating task: {new_task_response.error.message}")  # type: ignore
+
+    def download_completed_task(self, video_key: str, save_path: Union[str, Path]) -> None:
+        """
+        download completed task to local
+
+        :param video_key: video_key of the task
+        :param save_path: local save path
+        """
+
+        get_task_progress_response = self.get_task_progress(GetTaskProgressRequest(video_key=video_key))
+        if not get_task_progress_response.success:
+            raise ValueError(f"Error getting task progress: {get_task_progress_response.error.message}")  # type: ignore
+
+        if get_task_progress_response.data.encode_url == "":  # type: ignore
+            raise TaskNotCompletedError()
+
+        response = self.client.get(get_task_progress_response.data.encode_url)  # type: ignore
+        if response.status_code != 200:
+            raise IOError(f"Error downloading file: {response.text}")
+
+        with open(save_path, "wb") as file:
+            file.write(response.content)

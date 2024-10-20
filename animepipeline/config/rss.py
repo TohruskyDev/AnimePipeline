@@ -64,6 +64,17 @@ class RSSConfig(BaseModel):
             for _file in os.listdir(folder_path):
                 with open(os.path.join(folder_path, _file), "r", encoding="utf-8") as f:
                     res[_file] = f.read()
+
+                # remove newline symbol at the end
+                # cuz the encode param will be passed to the server, that will directly "param" + "encode.mkv"
+                # if there is a newline symbol at the end, the server will not find the file
+                if res[_file].endswith("\n"):
+                    res[_file] = res[_file][:-1]
+                elif res[_file].endswith("\r\n"):
+                    res[_file] = res[_file][:-2]
+                elif res[_file].endswith("\r"):
+                    res[_file] = res[_file][:-1]
+
             return res
 
         if scripts_path is None:
