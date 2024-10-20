@@ -89,7 +89,7 @@ class FinalRipClient:
         with open(video_path, "rb") as file:
             response = httpx.put(
                 url=oss_presigned_url_response.data.url,  # type: ignore
-                data=file,
+                content=file,
                 headers={"Content-Type": content_type},
             )
             if response.status_code != 200:
