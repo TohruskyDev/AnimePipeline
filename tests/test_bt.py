@@ -5,7 +5,9 @@ from pathlib import Path
 import pytest
 
 from animepipeline.bt.qb import QBittorrentManager
-from animepipeline.config import QBitTorrentConfig
+from animepipeline.config import ServerConfig
+
+from .util import CONFIG_PATH
 
 
 @pytest.mark.skipif(
@@ -20,25 +22,21 @@ def test_qbittorrent() -> None:
     else:
         download_path = Path("./deploy/docker/downloads")
 
-    cfg = QBitTorrentConfig(
-        host="localhost",
-        port=8080,
-        username="admin",
-        password="adminadmin",
-        download_path=download_path,
-    )
+    server_config: ServerConfig = ServerConfig.from_yaml(CONFIG_PATH / "server.yml")
+    cfg = server_config.qbittorrent
+    cfg.download_path = download_path.absolute()
     qb_manager = QBittorrentManager(config=cfg)
 
     qb_manager.add_torrent(torrent_hash=torrent_hash, torrent_url=torrent_url)
 
     # Check if the download is complete
     while True:
+        time.sleep(5)
         if qb_manager.check_download_complete(torrent_hash):
             print("Download is complete.")
             break
         else:
             print("Download is not complete.")
-            time.sleep(5)
 
     # Get the downloaded filename
     file_path = qb_manager.get_downloaded_path(torrent_hash)

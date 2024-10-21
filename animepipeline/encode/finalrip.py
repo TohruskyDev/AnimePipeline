@@ -23,7 +23,7 @@ from animepipeline.util.video import VIDEO_EXTENSIONS
 
 class FinalRipClient:
     def __init__(self, config: FinalRipConfig):
-        self.client = Client(base_url=str(config.url), headers={"token": config.token})
+        self.client = Client(base_url=str(config.url), headers={"token": str(config.token)})
 
     def ping(self) -> PingResponse:
         try:

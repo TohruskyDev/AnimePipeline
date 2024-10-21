@@ -9,7 +9,7 @@ db:
 
 qbittorrent:
   host: localhost
-  port: 8080
+  port: 8091
   username: admin
   password: adminadmin
   download_path: .

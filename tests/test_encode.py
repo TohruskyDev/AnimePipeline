@@ -3,7 +3,7 @@ import time
 
 import pytest
 
-from animepipeline.config import FinalRipConfig, RSSConfig
+from animepipeline.config import RSSConfig, ServerConfig
 from animepipeline.encode.finalrip import FinalRipClient
 from animepipeline.encode.type import GetTaskProgressRequest, StartTaskRequest, TaskNotCompletedError
 
@@ -15,7 +15,8 @@ video_key = "test_144p.mp4"
 @pytest.mark.skipif(os.environ.get("GITHUB_ACTIONS") == "true", reason="Only test locally")
 class Test_FinalRip:
     def setup_method(self) -> None:
-        self.finalrip = FinalRipClient(FinalRipConfig(url="http://10.132.217.11:8848", token="114514"))
+        server_config: ServerConfig = ServerConfig.from_yaml(CONFIG_PATH / "server.yml")
+        self.finalrip = FinalRipClient(server_config.finalrip)
 
     def test_ping(self) -> None:
         ping_response = self.finalrip.ping()
