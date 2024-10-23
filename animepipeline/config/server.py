@@ -1,9 +1,9 @@
 import os
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import yaml
-from pydantic import AnyUrl, BaseModel, DirectoryPath, Field, FilePath, ValidationError
+from pydantic import AnyUrl, BaseModel, DirectoryPath, Field, ValidationError
 
 
 class QBitTorrentConfig(BaseModel):
@@ -32,8 +32,6 @@ class ServerConfig(BaseModel):
     finalrip: FinalRipConfig
     telegram: TelegramConfig
 
-    config_path: Optional[FilePath] = None
-
     @classmethod
     def from_yaml(cls, path: Union[Path, str]) -> Any:
         """
@@ -54,6 +52,5 @@ class ServerConfig(BaseModel):
                 raise ValueError(f"Error loading config: {e}")
 
         config = cls(**config_data)
-        config.config_path = Path(path)
 
         return config

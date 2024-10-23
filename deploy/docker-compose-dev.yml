@@ -25,8 +25,8 @@ services:
     image: aiogram/telegram-bot-api:latest
     restart: always
     environment:
-      TELEGRAM_API_ID: "26116667"
-      TELEGRAM_API_HASH: "4ab6824ade37253ad00f3e2e4e3aa807"
+      TELEGRAM_API_ID: "26"
+      TELEGRAM_API_HASH: "4a"
       TELEGRAM_LOCAL: 1
     volumes:
       - telegram-bot-api-data:/var/lib/telegram-bot-api

@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 from animepipeline.config import ServerConfig
@@ -9,6 +11,7 @@ video_key = "test_144p.mp4"
 
 
 @pytest.mark.asyncio
+@pytest.mark.skipif(os.environ.get("GITHUB_ACTIONS") == "true", reason="Only test locally")
 async def test_tg_bot() -> None:
     server_config: ServerConfig = ServerConfig.from_yaml(CONFIG_PATH / "server.yml")
 
