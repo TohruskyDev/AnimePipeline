@@ -10,7 +10,7 @@ def test_load_server_config() -> None:
     print(server_config)
 
 
-def test_load_server_rss() -> None:
+def test_load_rss_config() -> None:
     # 使用 from_yaml 加载配置
     rss_config: RSSConfig = RSSConfig.from_yaml(CONFIG_PATH / "rss.yml")
     print(rss_config)
@@ -21,4 +21,3 @@ def test_load_server_rss() -> None:
     # test get script
     script_name = rss_config.nyaa[0].script
     assert isinstance(script_name, str)
-    print(rss_config.scripts[script_name])
