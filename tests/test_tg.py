@@ -17,4 +17,6 @@ async def test_tg_bot() -> None:
 
     video_sender = TGChannelVideoSender(server_config.telegram)
 
-    await video_sender.send_video(video_path=ASSETS_PATH / video_key, caption="114514 哼哼啊啊啊 | test mp4")
+    await video_sender.send_video(
+        video_path=ASSETS_PATH / video_key, caption="from unit test --> | 114514 哼哼啊啊啊 | test mp4"
+    )
