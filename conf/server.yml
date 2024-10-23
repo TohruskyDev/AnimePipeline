@@ -1,12 +1,3 @@
-db:
-  type: mongodb
-  host: 127.0.0.1
-  port: 27017
-  username: root
-  password: 123456
-  database: animepipeline
-  ssl: false
-
 qbittorrent:
   host: localhost
   port: 8091
@@ -17,3 +8,10 @@ qbittorrent:
 finalrip:
   url: http://localhost:8848
   token: 114514
+
+telegram:
+  local_mode: true
+  base_url: http://localhost:8081/bot
+  base_file_url: http://localhost:8081/file/bot
+  bot_token: 78
+  channel_id: -1

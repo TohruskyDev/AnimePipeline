@@ -1,19 +1,9 @@
 import os
 from pathlib import Path
-from typing import Any, Literal, Optional, Union
+from typing import Any, Optional, Union
 
 import yaml
 from pydantic import AnyUrl, BaseModel, DirectoryPath, Field, FilePath, ValidationError
-
-
-class DBConfig(BaseModel):
-    type: Literal["mongodb"]  # 限定数据库类型为mongodb
-    host: str
-    port: int = Field(..., ge=1, le=65535)  # 端口号，限制在1-65535之间
-    username: Union[str, int]
-    password: Union[str, int]
-    database: Union[str, int]
-    ssl: bool
 
 
 class QBitTorrentConfig(BaseModel):
@@ -29,10 +19,18 @@ class FinalRipConfig(BaseModel):
     token: Union[str, int]
 
 
+class TelegramConfig(BaseModel):
+    local_mode: bool
+    base_url: AnyUrl
+    base_file_url: AnyUrl
+    bot_token: str
+    channel_id: Union[str, int]
+
+
 class ServerConfig(BaseModel):
-    db: DBConfig
     qbittorrent: QBitTorrentConfig
     finalrip: FinalRipConfig
+    telegram: TelegramConfig
 
     config_path: Optional[FilePath] = None
 

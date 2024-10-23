@@ -14,6 +14,7 @@ class BaseConfig(BaseModel):
 
 class NyaaConfig(BaseModel):
     name: str
+    translation: str
     link: Union[str, AnyUrl]
     pattern: str
     uploader: Optional[str] = None
