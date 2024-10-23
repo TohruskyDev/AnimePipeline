@@ -1,3 +1,6 @@
+loop:
+  interval: 200
+
 qbittorrent:
   host: localhost
   port: 8091

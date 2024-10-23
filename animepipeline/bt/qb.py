@@ -15,7 +15,7 @@ class QBittorrentManager:
     :param config: QBitTorrentConfig object
     """
 
-    def __init__(self, config: QBitTorrentConfig):
+    def __init__(self, config: QBitTorrentConfig) -> None:
         self.client = qbittorrentapi.Client(
             host=config.host,
             port=config.port,

@@ -6,6 +6,10 @@ import yaml
 from pydantic import AnyUrl, BaseModel, DirectoryPath, Field, ValidationError
 
 
+class LoopConfig(BaseModel):
+    interval: int
+
+
 class QBitTorrentConfig(BaseModel):
     host: str
     port: int = Field(..., ge=1, le=65535)
@@ -28,6 +32,7 @@ class TelegramConfig(BaseModel):
 
 
 class ServerConfig(BaseModel):
+    loop: LoopConfig
     qbittorrent: QBitTorrentConfig
     finalrip: FinalRipConfig
     telegram: TelegramConfig
