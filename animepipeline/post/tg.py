@@ -8,9 +8,9 @@ from tenacity import retry, stop_after_attempt, wait_random
 from animepipeline.config import TelegramConfig
 
 
-class TGChannelVideoSender:
+class TGChannelSender:
     """
-    TG Channel Video Sender.
+    TG Channel Sender.
 
     :param config: The telegram configuration.
     """

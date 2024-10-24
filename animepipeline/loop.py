@@ -3,6 +3,7 @@ import asyncio
 from animepipeline.bt import QBittorrentManager
 from animepipeline.config import NyaaConfig, RSSConfig, ServerConfig
 from animepipeline.pool import AsyncTaskExecutor
+from animepipeline.post import TGChannelSender
 from animepipeline.rss import TorrentInfo, parse_nyaa
 
 
@@ -45,6 +46,10 @@ class Loop:
         self.task_executor = AsyncTaskExecutor()  # async task pool
 
         self.qbittorrent_manager = QBittorrentManager(config=self.server_config.qbittorrent)
+
+        self.tg_channel_sender = (
+            TGChannelSender(config=self.server_config.telegram) if self.server_config.telegram.enable else None
+        )
 
     async def start(self) -> None:
         while True:

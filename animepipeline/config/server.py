@@ -24,6 +24,7 @@ class FinalRipConfig(BaseModel):
 
 
 class TelegramConfig(BaseModel):
+    enable: bool
     local_mode: bool
     base_url: AnyUrl
     base_file_url: AnyUrl

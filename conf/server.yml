@@ -13,6 +13,7 @@ finalrip:
   token: 114514
 
 telegram:
+  enable: true
   local_mode: true
   base_url: http://localhost:8081/bot
   base_file_url: http://localhost:8081/file/bot
