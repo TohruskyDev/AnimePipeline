@@ -5,6 +5,7 @@ from typing import Union
 import httpx
 from httpx import Client
 from loguru import logger
+from tenacity import retry, stop_after_attempt, wait_random
 
 from animepipeline.config import FinalRipConfig
 from animepipeline.encode.type import (
@@ -34,7 +35,7 @@ class FinalRipClient:
             logger.error(f"Error ping: {e}")
             raise e
 
-    def new_task(self, data: NewTaskRequest) -> NewTaskResponse:
+    def _new_task(self, data: NewTaskRequest) -> NewTaskResponse:
         try:
             response = self.client.post("/api/v1/task/new", params=data.model_dump())
             return NewTaskResponse(**response.json())
@@ -42,7 +43,7 @@ class FinalRipClient:
             logger.error(f"Error creating task: {e}, {data}")
             raise e
 
-    def start_task(self, data: StartTaskRequest) -> StartTaskResponse:
+    def _start_task(self, data: StartTaskRequest) -> StartTaskResponse:
         try:
             response = self.client.post("/api/v1/task/start", params=data.model_dump())
             return StartTaskResponse(**response.json())
@@ -50,14 +51,14 @@ class FinalRipClient:
             logger.error(f"Error starting task: {e}, {data}")
             raise e
 
-    def get_task_progress(self, data: GetTaskProgressRequest) -> GetTaskProgressResponse:
+    def _get_task_progress(self, data: GetTaskProgressRequest) -> GetTaskProgressResponse:
         try:
             response = self.client.get("/api/v1/task/progress", params=data.model_dump())
             return GetTaskProgressResponse(**response.json())
         except Exception as e:
             raise e
 
-    def get_oss_presigned_url(self, data: OSSPresignedURLRequest) -> OSSPresignedURLResponse:
+    def _get_oss_presigned_url(self, data: OSSPresignedURLRequest) -> OSSPresignedURLResponse:
         try:
             response = self.client.get("/api/v1/task/oss/presigned", params=data.model_dump())
             return OSSPresignedURLResponse(**response.json())
@@ -67,14 +68,14 @@ class FinalRipClient:
 
     def check_task_exist(self, video_key: str) -> bool:
         try:
-            get_task_progress_response = self.get_task_progress(GetTaskProgressRequest(video_key=video_key))
+            get_task_progress_response = self._get_task_progress(GetTaskProgressRequest(video_key=video_key))
             return get_task_progress_response.success
         except Exception:
             return False
 
     def check_task_completed(self, video_key: str) -> bool:
         try:
-            get_task_progress_response = self.get_task_progress(GetTaskProgressRequest(video_key=video_key))
+            get_task_progress_response = self._get_task_progress(GetTaskProgressRequest(video_key=video_key))
             if not get_task_progress_response.success:
                 logger.error(f"Error getting task progress: {get_task_progress_response.error.message}")  # type: ignore
                 return False
@@ -83,6 +84,7 @@ class FinalRipClient:
             logger.error(f"Error checking task completed: {e}, video_key: {video_key}")
             return False
 
+    @retry(wait=wait_random(min=3, max=5), stop=stop_after_attempt(5))
     def upload_and_new_task(self, video_path: Union[str, Path]) -> None:
         """
         use file name as video_key, gen oss presigned url, upload file, and new_task, all in one function
@@ -97,7 +99,7 @@ class FinalRipClient:
 
         # gen oss presigned url
         video_key = Path(video_path).name
-        oss_presigned_url_response = self.get_oss_presigned_url(OSSPresignedURLRequest(video_key=video_key))
+        oss_presigned_url_response = self._get_oss_presigned_url(OSSPresignedURLRequest(video_key=video_key))
         if not oss_presigned_url_response.success:
             raise ValueError(f"Error getting presigned URL: {oss_presigned_url_response.error.message}")  # type: ignore
 
@@ -117,9 +119,20 @@ class FinalRipClient:
                 raise IOError(f"Error uploading file: {response.text}")
 
         # new task
-        new_task_response = self.new_task(NewTaskRequest(video_key=video_key))
+        new_task_response = self._new_task(NewTaskRequest(video_key=video_key))
         if not new_task_response.success:
             raise ValueError(f"Error creating task: {new_task_response.error.message}")  # type: ignore
+
+    @retry(wait=wait_random(min=3, max=5), stop=stop_after_attempt(5))
+    def start_task(self, video_key: str, encode_param: str, script: str) -> StartTaskResponse:
+        """
+        start encode task
+
+        :param video_key: video_key of the task
+        :param encode_param: encode param
+        :param script: encode script
+        """
+        return self._start_task(StartTaskRequest(video_key=video_key, encode_param=encode_param, script=script))
 
     def download_completed_task(self, video_key: str, save_path: Union[str, Path]) -> None:
         """
@@ -131,7 +144,7 @@ class FinalRipClient:
         if not self.check_task_completed(video_key):
             raise TaskNotCompletedError()
 
-        get_task_progress_response = self.get_task_progress(GetTaskProgressRequest(video_key=video_key))
+        get_task_progress_response = self._get_task_progress(GetTaskProgressRequest(video_key=video_key))
 
         response = self.client.get(get_task_progress_response.data.encode_url)  # type: ignore
         if response.status_code != 200:

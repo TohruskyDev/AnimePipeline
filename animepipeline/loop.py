@@ -123,6 +123,11 @@ class Loop:
             # start finalrip task
             if not self.finalrip_client.check_task_exist(task_status.bt_downloaded_path.name):
                 self.finalrip_client.upload_and_new_task(task_status.bt_downloaded_path)
+                self.finalrip_client.start_task(
+                    video_key=task_status.bt_downloaded_path.name,
+                    encode_param=task_info.param,
+                    script=task_info.script,
+                )
 
             # check task progress
             while not self.finalrip_client.check_task_completed(task_status.bt_downloaded_path.name):

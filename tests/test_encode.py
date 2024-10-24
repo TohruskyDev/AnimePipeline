@@ -5,7 +5,7 @@ import pytest
 
 from animepipeline.config import RSSConfig, ServerConfig
 from animepipeline.encode.finalrip import FinalRipClient
-from animepipeline.encode.type import GetTaskProgressRequest, StartTaskRequest, TaskNotCompletedError
+from animepipeline.encode.type import GetTaskProgressRequest, TaskNotCompletedError
 
 from .util import ASSETS_PATH, CONFIG_PATH
 
@@ -39,7 +39,7 @@ class Test_FinalRip:
         for _, v in rss_config.scripts.items():
             s = v
         print(repr(s))
-        start_task_response = self.finalrip.start_task(StartTaskRequest(encode_param=p, script=s, video_key=video_key))
+        start_task_response = self.finalrip.start_task(encode_param=p, script=s, video_key=video_key)
         print(start_task_response)
 
     def test_check_task_exist(self) -> None:
@@ -49,7 +49,7 @@ class Test_FinalRip:
         print(self.finalrip.check_task_completed(video_key))
 
     def test_task_progress(self) -> None:
-        task_progress = self.finalrip.get_task_progress(GetTaskProgressRequest(video_key=video_key))
+        task_progress = self.finalrip._get_task_progress(GetTaskProgressRequest(video_key=video_key))
         print(task_progress)
 
     def test_download_completed_task(self) -> None:

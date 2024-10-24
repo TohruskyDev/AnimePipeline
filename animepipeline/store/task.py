@@ -2,7 +2,7 @@ import asyncio
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from pydantic import BaseModel, FilePath
 
@@ -20,7 +20,7 @@ class AsyncJsonStore:
     :param file_path: Path to the JSON file.
     """
 
-    def __init__(self, file_path: str = "task.json") -> None:
+    def __init__(self, file_path: Union[str, Path] = "store.json") -> None:
         self.file_path = Path(file_path)
         self.lock = asyncio.Lock()  # 使用 asyncio.Lock 确保线程安全
         self.data: Dict[str, TaskStatus] = self.load_data()
