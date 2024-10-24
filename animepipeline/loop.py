@@ -1,6 +1,8 @@
 import asyncio
 from pathlib import Path
 
+from loguru import logger
+
 from animepipeline.bt import QBittorrentManager
 from animepipeline.config import NyaaConfig, RSSConfig, ServerConfig
 from animepipeline.encode import FinalRipClient
@@ -93,6 +95,8 @@ class Loop:
             await asyncio.sleep(self.server_config.loop.interval)
 
     async def pipeline(self, task_info: TaskInfo) -> None:
+        logger.info(f"Start pipeline for {task_info.name} EP {task_info.episode}")
+
         # init task status
         if not await self.json_store.check_task_exist(task_info.hash):
             await self.json_store.add_task(task_id=task_info.hash, status=TaskStatus())
@@ -101,9 +105,11 @@ class Loop:
 
         # check bt
         if task_status.bt_downloaded_path is None:
+            logger.info(f"Start BT download for {task_info.name} EP {task_info.episode}")
             # download torrent file
-            if not self.qbittorrent_manager.check_torrent_exist(task_info.hash):
+            while not self.qbittorrent_manager.check_torrent_exist(task_info.hash):
                 self.qbittorrent_manager.add_torrent(torrent_hash=task_info.hash, torrent_url=task_info.link)  # type: ignore
+                await asyncio.sleep(10)
 
             # check download complete
             while not self.qbittorrent_manager.check_download_complete(task_info.hash):
@@ -120,6 +126,7 @@ class Loop:
 
         # check finalrip
         if task_status.finalrip_downloaded_path is None:
+            logger.info(f"Start FinalRip Encode for {task_info.name} EP {task_info.episode}")
             # start finalrip task
             if not self.finalrip_client.check_task_exist(task_status.bt_downloaded_path.name):
                 self.finalrip_client.upload_and_new_task(task_status.bt_downloaded_path)
@@ -158,6 +165,7 @@ class Loop:
 
         # check tg
         if not task_status.tg_uploaded:
+            logger.info(f"Start Telegram Channel Upload for {task_info.name} EP {task_info.episode}")
             if self.tg_channel_sender is not None:
                 await self.tg_channel_sender.send_video(
                     video_path=task_status.finalrip_downloaded_path,

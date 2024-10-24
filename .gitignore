@@ -170,3 +170,4 @@ cython_debug/
 
 
 /deploy/docker/
+/conf/store.json
