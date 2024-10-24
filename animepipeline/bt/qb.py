@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 import qbittorrentapi
 from loguru import logger
@@ -27,7 +27,7 @@ class QBittorrentManager:
 
         self.COMPLETE_STATES = ["uploading", "stalledUP", "pausedUP", "queuedUP"]
 
-    def add_torrent(self, torrent_hash: str, torrent_url: Optional[str] = None) -> None:
+    def add_torrent(self, torrent_hash: str, torrent_url: Optional[Union[str, Path]] = None) -> None:
         """
         Add a torrent to download
 

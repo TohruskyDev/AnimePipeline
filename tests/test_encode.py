@@ -42,6 +42,12 @@ class Test_FinalRip:
         start_task_response = self.finalrip.start_task(StartTaskRequest(encode_param=p, script=s, video_key=video_key))
         print(start_task_response)
 
+    def test_check_task_exist(self) -> None:
+        assert self.finalrip.check_task_exist(video_key)
+
+    def test_check_task_completed(self) -> None:
+        print(self.finalrip.check_task_completed(video_key))
+
     def test_task_progress(self) -> None:
         task_progress = self.finalrip.get_task_progress(GetTaskProgressRequest(video_key=video_key))
         print(task_progress)

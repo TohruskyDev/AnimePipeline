@@ -4,6 +4,7 @@ from typing import Union
 
 import httpx
 from httpx import Client
+from loguru import logger
 
 from animepipeline.config import FinalRipConfig
 from animepipeline.encode.type import (
@@ -30,40 +31,57 @@ class FinalRipClient:
             response = self.client.get("/")
             return PingResponse(**response.json())
         except Exception as e:
-            print(f"Error ping: {e}")
-            raise
+            logger.error(f"Error ping: {e}")
+            raise e
 
     def new_task(self, data: NewTaskRequest) -> NewTaskResponse:
         try:
             response = self.client.post("/api/v1/task/new", params=data.model_dump())
             return NewTaskResponse(**response.json())
         except Exception as e:
-            print(f"Error creating task: {e}")
-            raise
+            logger.error(f"Error creating task: {e}, {data}")
+            raise e
 
     def start_task(self, data: StartTaskRequest) -> StartTaskResponse:
         try:
             response = self.client.post("/api/v1/task/start", params=data.model_dump())
             return StartTaskResponse(**response.json())
         except Exception as e:
-            print(f"Error starting task: {e}")
-            raise
+            logger.error(f"Error starting task: {e}, {data}")
+            raise e
 
     def get_task_progress(self, data: GetTaskProgressRequest) -> GetTaskProgressResponse:
         try:
             response = self.client.get("/api/v1/task/progress", params=data.model_dump())
             return GetTaskProgressResponse(**response.json())
         except Exception as e:
-            print(f"Error getting task progress: {e}")
-            raise
+            raise e
 
     def get_oss_presigned_url(self, data: OSSPresignedURLRequest) -> OSSPresignedURLResponse:
         try:
             response = self.client.get("/api/v1/task/oss/presigned", params=data.model_dump())
             return OSSPresignedURLResponse(**response.json())
         except Exception as e:
-            print(f"Error getting presigned URL: {e}")
-            raise
+            logger.error(f"Error getting presigned URL: {e}, {data}")
+            raise e
+
+    def check_task_exist(self, video_key: str) -> bool:
+        try:
+            get_task_progress_response = self.get_task_progress(GetTaskProgressRequest(video_key=video_key))
+            return get_task_progress_response.success
+        except Exception:
+            return False
+
+    def check_task_completed(self, video_key: str) -> bool:
+        try:
+            get_task_progress_response = self.get_task_progress(GetTaskProgressRequest(video_key=video_key))
+            if not get_task_progress_response.success:
+                logger.error(f"Error getting task progress: {get_task_progress_response.error.message}")  # type: ignore
+                return False
+            return get_task_progress_response.data.encode_url != ""  # type: ignore
+        except Exception as e:
+            logger.error(f"Error checking task completed: {e}, video_key: {video_key}")
+            return False
 
     def upload_and_new_task(self, video_path: Union[str, Path]) -> None:
         """
@@ -83,7 +101,10 @@ class FinalRipClient:
         if not oss_presigned_url_response.success:
             raise ValueError(f"Error getting presigned URL: {oss_presigned_url_response.error.message}")  # type: ignore
 
-        content_type = mimetypes.guess_type(video_path)[0] or "application/octet-stream"
+        try:
+            content_type = mimetypes.guess_type(video_path)[0]
+        except Exception:
+            content_type = "application/octet-stream"
 
         # upload file
         with open(video_path, "rb") as file:
@@ -107,13 +128,10 @@ class FinalRipClient:
         :param video_key: video_key of the task
         :param save_path: local save path
         """
+        if not self.check_task_completed(video_key):
+            raise TaskNotCompletedError()
 
         get_task_progress_response = self.get_task_progress(GetTaskProgressRequest(video_key=video_key))
-        if not get_task_progress_response.success:
-            raise ValueError(f"Error getting task progress: {get_task_progress_response.error.message}")  # type: ignore
-
-        if get_task_progress_response.data.encode_url == "":  # type: ignore
-            raise TaskNotCompletedError()
 
         response = self.client.get(get_task_progress_response.data.encode_url)  # type: ignore
         if response.status_code != 200:

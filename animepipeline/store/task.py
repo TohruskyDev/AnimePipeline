@@ -2,14 +2,15 @@ import asyncio
 import json
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, FilePath
 
 
 class TaskStatus(BaseModel):
-    status: str
-    details: str = ""
+    bt_downloaded_path: Optional[FilePath] = None
+    finalrip_downloaded_path: Optional[FilePath] = None
+    tg_uploaded: bool = False
 
 
 class AsyncJsonStore:
@@ -46,6 +47,15 @@ class AsyncJsonStore:
             # convert TaskStatus objects to dictionaries
             data = {task_id: task.model_dump() for task_id, task in self.data.items()}
             json.dump(data, file, ensure_ascii=False, indent=4)
+
+    async def check_task_exist(self, task_id: str) -> bool:
+        """
+        Check if a task exists.
+
+        :param task_id: Task ID to check.
+        """
+        async with self.lock:
+            return task_id in self.data
 
     async def add_task(self, task_id: str, status: TaskStatus) -> None:
         """
