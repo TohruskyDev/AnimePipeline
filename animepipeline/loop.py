@@ -95,13 +95,16 @@ class Loop:
             await asyncio.sleep(self.server_config.loop.interval)
 
     async def pipeline(self, task_info: TaskInfo) -> None:
-        logger.info(f"Start pipeline for {task_info.name} EP {task_info.episode}")
-
         # init task status
         if not await self.json_store.check_task_exist(task_info.hash):
             await self.json_store.add_task(task_id=task_info.hash, status=TaskStatus())
 
         task_status = await self.json_store.get_task(task_info.hash)
+
+        if task_status.done:
+            return
+
+        logger.info(f"Start pipeline for {task_info.name} EP {task_info.episode}")
 
         # check bt
         if task_status.bt_downloaded_path is None:
@@ -176,3 +179,8 @@ class Loop:
                 await self.json_store.update_task(task_info.hash, task_status)
 
         assert task_status.tg_uploaded
+
+        # Done!
+        task_status.done = True
+        await self.json_store.update_task(task_info.hash, task_status)
+        logger.info(f"Finish pipeline for {task_info.name} EP {task_info.episode}")

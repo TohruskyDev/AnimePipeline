@@ -164,10 +164,9 @@ cython_debug/
 *.mp4
 *.mkv
 
+/deploy/docker/
 
 /tests/task.json
 /task.json
-
-
-/deploy/docker/
 /conf/store.json
+/store.json

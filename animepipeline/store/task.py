@@ -8,6 +8,7 @@ from pydantic import BaseModel, FilePath
 
 
 class TaskStatus(BaseModel):
+    done: bool = False
     bt_downloaded_path: Optional[FilePath] = None
     finalrip_downloaded_path: Optional[FilePath] = None
     tg_uploaded: bool = False
