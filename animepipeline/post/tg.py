@@ -1,7 +1,9 @@
 from pathlib import Path
 from typing import Optional, Union
 
+import telegram.error
 from telegram import Bot
+from tenacity import retry, stop_after_attempt, wait_random
 
 from animepipeline.config import TelegramConfig
 
@@ -26,6 +28,7 @@ class TGChannelVideoSender:
 
         self.channel_id = config.channel_id
 
+    @retry(wait=wait_random(min=3, max=5), stop=stop_after_attempt(10))
     async def send_video(self, video_path: Union[Path, str], caption: Optional[str] = None) -> None:
         """
         Send video to the channel.
@@ -44,11 +47,17 @@ class TGChannelVideoSender:
         with open(video_path, "rb") as f:
             video_file = f.read()
 
-        await self.bot.send_video(
-            chat_id=self.channel_id,
-            video=video_file,
-            filename=video_name,
-            caption=caption,
-            read_timeout=6000,
-            write_timeout=6000,
-        )
+        try:
+            await self.bot.send_video(
+                chat_id=self.channel_id,
+                video=video_file,
+                filename=video_name,
+                caption=caption,
+                read_timeout=6000,
+                write_timeout=6000,
+            )
+        except telegram.error.NetworkError as e:
+            print(f"Network error: {e}, video path: {video_path}, video_caption: {caption}, retrying...")
+            raise e
+        except Exception as e:
+            print(f"Unknown Error sending video: {e}, video path: {video_path}, video_caption: {caption}")
