@@ -6,6 +6,7 @@ base:
 nyaa:
   - name: "Make Heroine ga Oosugiru!"
     translation: "败犬女主太多了！"
+    bangumi: "https://bangumi.tv/subject/464376"
     link: "https://nyaa.si/?page=rss&q=%5BSubsPlease%5D+Make+Heroine+ga+Oosugiru%21+-++%281080p%29&c=0_0&f=0"
     pattern: 'Make Heroine ga Oosugiru! - (\d+) \(1080p\)'
   #    uploader: '114514Raws' # override uploader
@@ -14,5 +15,6 @@ nyaa:
 
   - name: "Roshidere"
     translation: "不时用俄语小声说真心话的邻桌艾莉同学"
+    bangumi: "https://bangumi.tv/subject/424883"
     link: "https://nyaa.si/?page=rss&q=%5BErai-raws%5D+Roshidere+-++%5B1080p%5D%5BMultiple+Subtitle%5D+%5BENG%5D%5BPOR-BR%5D%5BSPA-LA%5D%5BSPA%5D%5BARA%5D%5BFRE%5D%5BITA%5D%5BRUS%5D+-%5BHEVC%5D&c=0_0&f=0"
     pattern: 'Roshidere - (\d+) \[1080p\]'

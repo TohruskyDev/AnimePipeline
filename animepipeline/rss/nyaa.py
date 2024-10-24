@@ -36,6 +36,7 @@ def parse_nyaa(cfg: NyaaConfig) -> List[TorrentInfo]:
             TorrentInfo(
                 name=cfg.name,
                 translation=cfg.translation,
+                bangumi=cfg.bangumi,
                 episode=episode_number,
                 title=item.title,
                 link=item.link,

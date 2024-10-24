@@ -15,6 +15,7 @@ class BaseConfig(BaseModel):
 class NyaaConfig(BaseModel):
     name: str
     translation: str
+    bangumi: Union[str, AnyUrl]
     link: Union[str, AnyUrl]
     pattern: str
     uploader: Optional[str] = None
