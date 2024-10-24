@@ -4,13 +4,14 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Dict, Optional, Union
 
-from pydantic import BaseModel, FilePath
+from pydantic import BaseModel
 
 
+# use str to store the path, because Path may not serializable on Windows
 class TaskStatus(BaseModel):
     done: bool = False
-    bt_downloaded_path: Optional[FilePath] = None
-    finalrip_downloaded_path: Optional[FilePath] = None
+    bt_downloaded_path: Optional[str] = None
+    finalrip_downloaded_path: Optional[str] = None
     tg_uploaded: bool = False
 
 

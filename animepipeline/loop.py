@@ -122,7 +122,7 @@ class Loop:
             bt_downloaded_path = self.qbittorrent_manager.get_downloaded_path(task_info.hash)
 
             # update task status
-            task_status.bt_downloaded_path = bt_downloaded_path
+            task_status.bt_downloaded_path = str(bt_downloaded_path)
             await self.json_store.update_task(task_info.hash, task_status)
 
         assert task_status.bt_downloaded_path is not None
@@ -131,25 +131,34 @@ class Loop:
         if task_status.finalrip_downloaded_path is None:
             logger.info(f"Start FinalRip Encode for {task_info.name} EP {task_info.episode}")
             # start finalrip task
-            if not self.finalrip_client.check_task_exist(task_status.bt_downloaded_path.name):
-                self.finalrip_client.upload_and_new_task(task_status.bt_downloaded_path)
+
+            bt_downloaded_path = Path(task_status.bt_downloaded_path)
+
+            while not self.finalrip_client.check_task_exist(bt_downloaded_path.name):
+                try:
+                    self.finalrip_client.upload_and_new_task(bt_downloaded_path)
+                except Exception as e:
+                    logger.error(f"Failed to start finalrip task: {e}")
+                    raise e
+                await asyncio.sleep(10)
+
+            try:
                 self.finalrip_client.start_task(
-                    video_key=task_status.bt_downloaded_path.name,
+                    video_key=bt_downloaded_path.name,
                     encode_param=task_info.param,
                     script=task_info.script,
                 )
+            except Exception as e:
+                logger.error(f"Failed to start finalrip task: {e}")
+                raise e
 
             # check task progress
-            while not self.finalrip_client.check_task_completed(task_status.bt_downloaded_path.name):
+            while not self.finalrip_client.check_task_completed(bt_downloaded_path.name):
                 await asyncio.sleep(10)
 
             # download temp file to bt_downloaded_path's parent directory
-            temp_saved_path: Path = task_status.bt_downloaded_path.parent / (
-                task_status.bt_downloaded_path.name + "-encoded.mkv"
-            )
-            self.finalrip_client.download_completed_task(
-                video_key=task_status.bt_downloaded_path.name, save_path=temp_saved_path
-            )
+            temp_saved_path: Path = bt_downloaded_path.parent / (bt_downloaded_path.name + "-encoded.mkv")
+            self.finalrip_client.download_completed_task(video_key=bt_downloaded_path.name, save_path=temp_saved_path)
 
             # rename temp file
             gen_name = gen_file_name(
@@ -157,11 +166,11 @@ class Loop:
                     path=temp_saved_path, episode=task_info.episode, name=task_info.name, uploader=task_info.uploader
                 )
             )
-            finalrip_downloaded_path = task_status.bt_downloaded_path.parent / gen_name
+            finalrip_downloaded_path = bt_downloaded_path.parent / gen_name
             temp_saved_path.rename(finalrip_downloaded_path)
 
             # update task status
-            task_status.finalrip_downloaded_path = finalrip_downloaded_path
+            task_status.finalrip_downloaded_path = str(finalrip_downloaded_path)
             await self.json_store.update_task(task_info.hash, task_status)
 
         assert task_status.finalrip_downloaded_path is not None
@@ -169,10 +178,13 @@ class Loop:
         # check tg
         if not task_status.tg_uploaded:
             logger.info(f"Start Telegram Channel Upload for {task_info.name} EP {task_info.episode}")
+
+            finalrip_downloaded_path = Path(task_status.finalrip_downloaded_path)
+
             if self.tg_channel_sender is not None:
                 await self.tg_channel_sender.send_video(
-                    video_path=task_status.finalrip_downloaded_path,
-                    caption=f"{task_info.translation} | EP {task_info.episode} | {task_status.finalrip_downloaded_path.name}",
+                    video_path=finalrip_downloaded_path,
+                    caption=f"{task_info.translation} | EP {task_info.episode} | {finalrip_downloaded_path.name}",
                 )
 
                 task_status.tg_uploaded = True

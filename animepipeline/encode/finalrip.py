@@ -124,7 +124,7 @@ class FinalRipClient:
             raise ValueError(f"Error creating task: {new_task_response.error.message}")  # type: ignore
 
     @retry(wait=wait_random(min=3, max=5), stop=stop_after_attempt(5))
-    def start_task(self, video_key: str, encode_param: str, script: str) -> StartTaskResponse:
+    def start_task(self, video_key: str, encode_param: str, script: str) -> None:
         """
         start encode task
 
@@ -132,7 +132,9 @@ class FinalRipClient:
         :param encode_param: encode param
         :param script: encode script
         """
-        return self._start_task(StartTaskRequest(video_key=video_key, encode_param=encode_param, script=script))
+        resp = self._start_task(StartTaskRequest(video_key=video_key, encode_param=encode_param, script=script))
+        if not resp.success:
+            raise ValueError(f"Failed to start finalrip task: {resp.message}")
 
     def download_completed_task(self, video_key: str, save_path: Union[str, Path]) -> None:
         """
