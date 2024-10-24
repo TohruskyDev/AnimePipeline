@@ -6,6 +6,7 @@ from pydantic import AnyHttpUrl, BaseModel
 
 class TorrentInfo(BaseModel):
     name: str
+    translation: str
     episode: int
     title: str
     link: Union[AnyHttpUrl, str]

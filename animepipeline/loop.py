@@ -1,8 +1,40 @@
 import asyncio
 
 from animepipeline.bt import QBittorrentManager
-from animepipeline.config import RSSConfig, ServerConfig
+from animepipeline.config import NyaaConfig, RSSConfig, ServerConfig
 from animepipeline.pool import AsyncTaskExecutor
+from animepipeline.rss import TorrentInfo, parse_nyaa
+
+
+class TaskInfo(TorrentInfo):
+    uploader: str
+    script: str
+    param: str
+
+
+def build_task_info(torrent_info: TorrentInfo, nyaa_config: NyaaConfig, rss_config: RSSConfig) -> TaskInfo:
+    """
+    Build TaskInfo from TorrentInfo, NyaaConfig and RSSConfig
+
+    :param torrent_info: TorrentInfo
+    :param nyaa_config: NyaaConfig
+    :param rss_config: RSSConfig
+    :return: TaskInfo
+    """
+    if nyaa_config.script not in rss_config.scripts:
+        raise ValueError(f"script not found: {nyaa_config.script}")
+    if nyaa_config.param not in rss_config.params:
+        raise ValueError(f"param not found: {nyaa_config.param}")
+
+    script = rss_config.scripts[nyaa_config.script]
+    param = rss_config.params[nyaa_config.param]
+
+    return TaskInfo(
+        **torrent_info.model_dump(),
+        uploader=nyaa_config.uploader,
+        script=script,
+        param=param,
+    )
 
 
 class Loop:
@@ -18,9 +50,15 @@ class Loop:
         while True:
             # refresh rss config
             self.rss_config.refresh_config()
-            await self.task_executor.submit_task("rss file hash", self.pipeline, 1, "ed")
+            for cfg in self.rss_config.nyaa:
+                torrent_info_list = parse_nyaa(cfg)
+
+                for torrent_info in torrent_info_list:
+                    task_info = build_task_info(torrent_info, cfg, self.rss_config)
+
+                    await self.task_executor.submit_task(torrent_info.hash, self.pipeline, task_info)
 
             await asyncio.sleep(self.server_config.loop.interval)
 
-    async def pipeline(self) -> None:
+    async def pipeline(self, task_info: TaskInfo) -> None:
         pass
